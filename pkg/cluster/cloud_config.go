@@ -26,8 +26,17 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+// Provider specifies the provider. Can be 'default' or 'capmox'
+type Provider string
+
+const ProviderDefault Provider = "default"
+const ProviderCapmox Provider = "capmox"
+
 // ClustersConfig is proxmox multi-cluster cloud config.
 type ClustersConfig struct {
+	Features struct {
+		Provider Provider `yaml:"provider,omitempty"`
+	}
 	Clusters []struct {
 		URL         string `yaml:"url"`
 		Insecure    bool   `yaml:"insecure,omitempty"`
@@ -65,6 +74,10 @@ func ReadCloudConfig(config io.Reader) (ClustersConfig, error) {
 		if c.URL == "" || !strings.HasPrefix(c.URL, "http") {
 			return ClustersConfig{}, fmt.Errorf("cluster #%d: url is required", idx+1)
 		}
+	}
+
+	if cfg.Features.Provider == "" {
+		cfg.Features.Provider = ProviderDefault
 	}
 
 	return cfg, nil
